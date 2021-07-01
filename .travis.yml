@@ -1,0 +1,22 @@
+sudo: required
+
+services: 
+  - docker
+
+before_install:
+  - docker build -t agustinoliver/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true agustinoliver/react-test npm test
+  
+after_success:
+  - docker build -t agustinoliver/multi-client ./client
+  - docker build -t agustinoliver/multi-server ./server
+  - docker build -t agustinoliver/multi-nginx  ./nginx 
+  - docker build -t agustinoliver/multi-worker ./worker
+  - echo "$docker_password" | docker login -u "$docker_id" --password-stdin;
+  - docker push agustinoliver/multi-client 
+  - docker push agustinoliver/multi-server
+  - docker push agustinoliver/multi-nginx 
+  - docker push agustinoliver/multi-worker
+
